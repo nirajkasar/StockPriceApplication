@@ -1,0 +1,180 @@
+<html>
+   <head>
+	<script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+
+      <script type="text/javascript">
+	  jQuery(document).ready(function() {
+			WebSocketTest();
+			$(".loadDiv").fadeOut( 3000, function() {
+						$(".mainContent").fadeIn( 1000);					
+					});
+					
+	  });
+         function WebSocketTest()
+         {
+			document.getElementById("StockTable").style.background = "transparent";
+            if ("WebSocket" in window)
+            {              
+               // Let us open a web socket
+               var ws = new WebSocket("ws://stocks.mnet.website");
+				
+               ws.onopen = function()
+               {
+                  console.log("Begin");
+               };
+				
+               ws.onmessage = function (evt) 
+               { 	
+                  var received_msg = evt.data;     
+					JSON.parse(received_msg).forEach(function(str){				
+						var CompanyName = str[0];
+						var StockPrice = str[1];
+						var Difference; 
+						var ColorClass;
+						var icon = "";
+						if($($('#StockTable tr > td:contains("' +CompanyName+ '") + td:contains("")')[0]).html() !=null){
+							Difference =  StockPrice - $($('#StockTable tr > td:contains("' + CompanyName  + '") + td:contains("")')[0]).html();
+							if (Difference > 0){
+								icon = "green";
+							}else{
+								icon = "red";
+							}
+						}else{
+							Difference= 0;
+							icon = "new";
+						}
+						var dt = new Date();
+						var monthNames = [
+						"January", "February", "March",
+						"April", "May", "June", "July",
+						"August", "September", "October",
+						"November", "December"
+						];
+						var day = dt.getDate();
+						var monthIndex = dt.getMonth();
+						var year = dt.getFullYear();
+						var time = day + ' ' + monthNames[monthIndex] + ' ' + year + " " + dt.getHours() + ":" + dt.getMinutes() + ":" + dt.getSeconds();	
+						var iconString = "<img class='icon' src='" + icon + ".ico'/>"
+						$('#StockTable tr:first').after('<tr><td>'+ CompanyName + '</td><td>'+StockPrice+ '</td><td>' + iconString + ' &nbsp; <span class='+ icon +'>(' + Difference +')</span></td><td>'+ time +'</td></tr>').animate({padding: '0px'}, {duration: 200});;
+						if($("#myInput").val()){
+							search();
+						}
+					});									  	 
+               };							
+               ws.onclose = function()
+               { 
+                  // websocket is closed.
+                  console.log("End"); 
+               };
+            }
+            
+            else
+            {
+               // The browser doesn't support WebSocket
+               alert("WebSocket NOT supported by your Browser!");
+            }
+         }
+		 
+		 function search() {
+		  var input, filter, table, tr, td, i;
+		  input = $("#myInput")
+		  filter = $("#myInput").val().toUpperCase()
+		  table = document.getElementById("StockTable");
+		  tr = table.getElementsByTagName("tr");
+		  for (i = 0; i < tr.length; i++) {
+			td = tr[i].getElementsByTagName("td")[0];
+			if (td) {
+			  if (td.innerHTML.toUpperCase().indexOf(filter) > -1) {
+				tr[i].style.display = "";
+			  } else {
+				tr[i].style.display = "none";
+			  }
+			}       
+		  }
+		}
+      </script>
+	  <style type="text/css">
+			table{
+				font-family : "Courier New", Courier, monospace;
+			}
+			.green
+			{
+				color:green !important;
+			}
+			.red
+			{
+				color: red !important;
+			}
+			#StockTable {
+			  background-position: 10px 10px;
+			  background-repeat: no-repeat;
+			  width: 100%;
+			  font-size: 16px;
+			  padding: 12px 20px 12px 40px;
+			  border: 1px solid #ddd;
+			  margin-bottom: 12px;
+			}
+
+			#StockTable {
+			  border-collapse: collapse;
+			  width: 100%;
+			  border: 1px solid #ddd;
+			  font-size: 18px;
+			}
+
+			#StockTable th, #StockTable td {
+			  text-align: left;
+			  padding: 12px;
+			}
+
+			#StockTable tr {
+			  border-bottom: 1px solid #ddd;
+			}
+
+			#StockTable tr.header, #StockTable tr:hover {
+			  background-color: #f1f1f1;
+			}
+			input[type=text], select {
+				width: 100%;
+				padding: 12px 20px;
+				margin: 8px 0;
+				display: inline-block;
+				border: 1px solid #ccc;
+				border-radius: 4px;
+				box-sizing: border-box;
+			}
+			.spinner_gif{
+				display: block;
+				margin: auto;
+			}
+			.icon{
+				width: 16px !important;
+				height: 16px !important;
+			}
+			h1 { 
+			font-style: italic; color: #B6B6B6; font-size: 24px; margin-top: 20px; text-align: center; text-shadow: 0 1px 1px #fff; 
+			}
+	  </style>
+		
+   </head>
+   <body>
+	<div class='loadDiv'>
+		<img src='spinner.gif' class='spinner_gif' />
+	</div>
+	<div class='mainContent' style='display:none; overflow:hidden;'>
+	  <h1> Stock Price Table </h1>
+	  <input type="text" id="myInput" onkeyup="search()" placeholder="Search here..." title="Type in a name">
+	
+      <div style="overflow: auto; height: 75vh;">
+		<table id="StockTable" class=" table row-border hover order-column" cellspacing="0" width="100%">
+			<tr>
+				<th>Company</th>				
+				<th>Price</th>	
+				<th></th>								
+				<th>Time</th>				
+			</tr>
+		</table>
+	  </div>
+	 </div>
+   </body>
+</html>
